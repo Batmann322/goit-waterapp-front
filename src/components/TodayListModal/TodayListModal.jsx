@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import css from './TodayListModal.module.css';
 import snippets from '../../assets/images/sippets.svg';
 
-const WaterModal = ({ show, onClose, onSave, previousWaterData }) => {
+const TodayListModal = ({ show, onClose, onSave, previousWaterData }) => {
   const [waterAmount, setWaterAmount] = useState(
     previousWaterData ? previousWaterData.amount : 0
   );
@@ -45,17 +45,25 @@ const WaterModal = ({ show, onClose, onSave, previousWaterData }) => {
   };
 
   const handleBlur = () => {
-    setWaterAmount(Number(inputWaterAmount));
+    let updatedAmount = Number(inputWaterAmount);
+    if (updatedAmount < 0) updatedAmount = 0; // Не допускаємо значення менше 0
+    setWaterAmount(updatedAmount);
   };
 
   const incrementWaterAmount = () => {
-    setWaterAmount(prev => prev + 50);
+    setWaterAmount(prev => {
+      const updatedAmount = Math.min(prev + 50, 5000);
+      setInputWaterAmount(updatedAmount); // Синхронізація з input
+      return updatedAmount;
+    });
   };
 
   const decrementWaterAmount = () => {
-    if (waterAmount > 0) {
-      setWaterAmount(prev => prev - 50);
-    }
+    setWaterAmount(prev => {
+      const updatedAmount = Math.max(prev - 50, 0); // Значення не повинно бути меншим 0
+      setInputWaterAmount(updatedAmount); // Синхронізація з input
+      return updatedAmount;
+    });
   };
 
   const handleSave = () => {
@@ -73,7 +81,7 @@ const WaterModal = ({ show, onClose, onSave, previousWaterData }) => {
     <div className={css.modalBackdrop}>
       <div className={css.modalContent}>
         <div className={css.headerContainer}>
-          <h2>Edit the entered amount of water</h2>
+          <div className={css.modalTitle}>Edit the entered amount of water</div>
           <button className={css.modalClose} onClick={onClose}>
             <svg className="icon-x" width="24" height="24">
               <use href={`${snippets}#icon-x`}></use>
@@ -84,22 +92,16 @@ const WaterModal = ({ show, onClose, onSave, previousWaterData }) => {
         <div className={css.previousData}>
           {previousWaterData ? (
             <div className={css.waterInfoContainer}>
-              <svg
-                stroke="currentColor"
-                fill="currentColor"
-                strokeWidth="0"
-                viewBox="5 5 15 15"
-                className={css.icon}
-                height="1em"
-                width="1em"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <g id="Glass">
-                  <path d="M18.279,2.54a1.475,1.475,0,0,0-1.1-.48H6.819a1.47,1.47,0,0,0-1.09.48,1.5,1.5,0,0 ,0-.41,1.12L6.379,19.6a2.51,2.51,0,0,0,2.49,2.34h6.26a2.519,2.519,0,0,0,2.5-2.34l1.05-15.94A1.5,1.5,0,0,0,18.279,2.54Zm-1.65,16.99a1.508,1.508,0,0,1-1.5,1.41H8.869a1.506,1.506,0,0,1-1.49-1.41l-.64-9.62a2.981,2.981,0,0,0,1.17-.49,1.828,1.828,0,0,1,1.18-.39,1.858,1.858,0,0,1,1.19.39,3.025,3.025,0,0,0,3.45,0,1.879,1.879,0,0,1,1.19-.39,1.828,1.828,0,0,1,1.18.39,3,3,0,0,0,1.16.49Зм.7-10.62a2.317,2.317,0,0,1-.69-.33,2.98,2.98,0,0,0-3.45,0,1.885,1.885,0,0,1-1.18.38,1.939,1.939,0,0,1-1.19-.38,2.818,2.818,0,0,0-1.73-.55,2.809,2.809,0,0,0-1.72.55,2.374,2.374,0,0,1-.7.33l-.35-5.32a.468.468,0,0,1,.14-.37.484.484,0,0,1,.36-.16h10.36a.523.523,0,0,1,.37.16.46.46,0,0,1,.13.37Z"></path>
-                </g>
+              <svg className={css.icon} width="36" height="36">
+                <use href={`${snippets}#icon-glass`}></use>
               </svg>
-              {previousWaterData.amount} ml {previousWaterData.time}
-              <span className={css.amPmIndicator}>{amPm}</span>
+              <div className={css.waterIndicator}>
+                {previousWaterData.amount} ml{' '}
+              </div>
+              <div className={css.amPmIndicator}>
+                {previousWaterData.time}
+                <span className={css.amPmIndicator}>{amPm}</span>
+              </div>
             </div>
           ) : (
             <p>No notes yet</p>
@@ -107,8 +109,8 @@ const WaterModal = ({ show, onClose, onSave, previousWaterData }) => {
         </div>
 
         <div className={css.editSection}>
-          <label>Correct entered data:</label>
-          <label>Amount of water:</label>
+          <label className={css.correctData}>Correct entered data:</label>
+          <label className={css.amWater}>Amount of water:</label>
           <div className={css.stepInput}>
             <button className={css.roundButton} onClick={decrementWaterAmount}>
               -
@@ -118,6 +120,7 @@ const WaterModal = ({ show, onClose, onSave, previousWaterData }) => {
               +
             </button>
           </div>
+          <label className={css.recTime}>Recording time:</label>
           <div className={css.timeSelectBlock}>
             <select
               value={selectedTime}
@@ -130,7 +133,9 @@ const WaterModal = ({ show, onClose, onSave, previousWaterData }) => {
               ))}
             </select>
           </div>
-          <label>Enter the value of the water used:</label>
+          <label className={css.wtUsed}>
+            Enter the value of the water used:
+          </label>
           <input
             type="number"
             value={inputWaterAmount}
@@ -141,8 +146,8 @@ const WaterModal = ({ show, onClose, onSave, previousWaterData }) => {
         </div>
 
         <div className={css.modalActions}>
-          <div className={css.stepInput}>
-            <span>{waterAmount}ml</span>
+          <div className={css.stepOutput}>
+            <output>{waterAmount}ml</output>
           </div>
           <button
             className={`${css.stepSave} ${css.saveButtonStyle}`}
@@ -156,4 +161,4 @@ const WaterModal = ({ show, onClose, onSave, previousWaterData }) => {
   );
 };
 
-export default WaterModal;
+export default TodayListModal;
