@@ -1,7 +1,6 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 
-// Встановлюємо базову URL для всіх запитів
 axios.defaults.baseURL = 'https://waterapp-hfy2.onrender.com/';
 
 // Update user profile
